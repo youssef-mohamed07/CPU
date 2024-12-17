@@ -1,5 +1,14 @@
 public class Process {
-    int id, arrivalTime, burstTime, priority, completionTime, turnaroundTime, waitingTime, responseTime;
+    public int id;
+    public int arrivalTime;
+    public int burstTime;
+    public int priority;
+    
+    // Add these fields
+    public int completionTime;
+    public int turnaroundTime;
+    public int waitingTime;
+    public int responseTime;
 
     public Process(int id, int arrivalTime, int burstTime, int priority) {
         this.id = id;

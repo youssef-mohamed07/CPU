@@ -1,10 +1,10 @@
-import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 
 
 public class CPUSchedulingSimulator {
@@ -84,6 +84,50 @@ public class CPUSchedulingSimulator {
         inputPanel.add(btnSaveTest);
         inputPanel.add(btnLoadTest);
 
+        // Enhanced Input Validation
+        btnAdd.addActionListener(e -> {
+            try {
+                int arrivalTime = Integer.parseInt(txtArrivalTime.getText());
+                int burstTime = Integer.parseInt(txtBurstTime.getText());
+                int priority = Integer.parseInt(txtPriority.getText());
+
+                // Validate inputs
+                if (arrivalTime < 0 || burstTime <= 0 || priority < 0) {
+                    throw new IllegalArgumentException("Values must be non-negative and burst time must be positive.");
+                }
+
+                String processID = autoGenerateID.isSelected() ? "P" + (inputModel.getRowCount() + 1) : "P" + inputModel.getRowCount();
+                inputModel.addRow(new Object[]{processID, arrivalTime, burstTime, priority});
+
+                // Clear input fields
+                txtArrivalTime.setText("");
+                txtBurstTime.setText("");
+                txtPriority.setText("");
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(frame, "Please enter valid numeric values!", "Error", JOptionPane.ERROR_MESSAGE);
+            } catch (IllegalArgumentException ex) {
+                JOptionPane.showMessageDialog(frame, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        // Confirmation dialog for removing a row
+        btnRemove.addActionListener(e -> {
+            int selectedRow = inputTable.getSelectedRow();
+            if (selectedRow != -1) {
+                int confirm = JOptionPane.showConfirmDialog(frame, "Are you sure you want to remove this entry?", "Confirm Removal", JOptionPane.YES_NO_OPTION);
+                if (confirm == JOptionPane.YES_OPTION) {
+                    inputModel.removeRow(selectedRow);
+                }
+            } else {
+                JOptionPane.showMessageDialog(frame, "Please select a row to remove!", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        // Status bar for messages
+        JLabel statusBar = new JLabel("Welcome to the CPU Scheduling Simulator");
+        statusBar.setBounds(20, 850, 1220, 30);
+        frame.add(statusBar);
+
         // Scheduling Method Panel
         JPanel schedulingPanel = new JPanel();
         schedulingPanel.setBounds(760, 20, 480, 240);
@@ -131,7 +175,7 @@ public class CPUSchedulingSimulator {
                 new Color(0, 120, 215)
         ));
 
-        String[] outputColumns = {"Process ID", "Response Time", "Turnaround Time", "Completion Time", "Waiting Time"};
+        String[] outputColumns = {"Algorithm", "Process ID", "Response Time", "Turnaround Time", "Completion Time", "Waiting Time"};
         DefaultTableModel outputModel = new DefaultTableModel(outputColumns, 0);
         JTable outputTable = new JTable(outputModel);
         JScrollPane outputScrollPane = new JScrollPane(outputTable);
@@ -169,12 +213,16 @@ public class CPUSchedulingSimulator {
         outputPanel.add(throughputField);
 
         JButton btnExport = new JButton("Export to CSV");
-        btnExport.setBounds(900, 340, 140, 30);
+        btnExport.setBounds(1050, 340, 140, 30);
         outputPanel.add(btnExport);
 
-        JButton btnVisualize = new JButton("Visualize");
-        btnVisualize.setBounds(1050, 340, 140, 30);
-        outputPanel.add(btnVisualize);
+        JButton btnClearOutput = new JButton("Clear Output");
+        btnClearOutput.setBounds(900, 340, 140, 30);
+        outputPanel.add(btnClearOutput);
+
+        btnClearOutput.setBackground(new Color(220, 53, 69));  // Red color
+        btnClearOutput.setForeground(Color.WHITE);
+        btnClearOutput.setFocusPainted(false);
 
         // Add Panels to Frame
         frame.add(inputPanel);
@@ -183,31 +231,6 @@ public class CPUSchedulingSimulator {
 
         // Event Listeners
         ArrayList<ArrayList<Process>> savedTests = new ArrayList<>();
-        btnAdd.addActionListener(e -> {
-            try {
-                int arrivalTime = Integer.parseInt(txtArrivalTime.getText());
-                int burstTime = Integer.parseInt(txtBurstTime.getText());
-                int priority = Integer.parseInt(txtPriority.getText());
-                String processID = autoGenerateID.isSelected() ? "P" + (inputModel.getRowCount() + 1) : "P" + inputModel.getRowCount();
-
-                inputModel.addRow(new Object[]{processID, arrivalTime, burstTime, priority});
-
-                // Clear input fields
-                txtArrivalTime.setText("");
-                txtBurstTime.setText("");
-                txtPriority.setText("");
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(frame, "Please enter valid numeric values!", "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        });
-        btnRemove.addActionListener(e -> {
-            int selectedRow = inputTable.getSelectedRow();
-            if (selectedRow != -1) {
-                inputModel.removeRow(selectedRow);
-            } else {
-                JOptionPane.showMessageDialog(frame, "Please select a row to remove!", "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        });
         btnClearAll.addActionListener(e -> inputModel.setRowCount(0));
         btnSaveTest.addActionListener(e -> {
             ArrayList<Process> test = new ArrayList<>();
@@ -258,40 +281,91 @@ public class CPUSchedulingSimulator {
                 return;
             }
 
-            ArrayList<Process> processes = new ArrayList<>();
+            // Create process selection dialog
+            JDialog selectDialog = new JDialog(frame, "Select Processes", true);
+            selectDialog.setLayout(new BorderLayout());
+            selectDialog.setSize(300, 400);
+
+            JPanel checkBoxPanel = new JPanel();
+            checkBoxPanel.setLayout(new BoxLayout(checkBoxPanel, BoxLayout.Y_AXIS));
+            ArrayList<JCheckBox> checkBoxes = new ArrayList<>();
+
             for (int i = 0; i < inputModel.getRowCount(); i++) {
-                int id = Integer.parseInt(inputModel.getValueAt(i, 0).toString().substring(1));
-                int arrivalTime = Integer.parseInt(inputModel.getValueAt(i, 1).toString());
-                int burstTime = Integer.parseInt(inputModel.getValueAt(i, 2).toString());
-                int priority = Integer.parseInt(inputModel.getValueAt(i, 3).toString());
-                processes.add(new Process(id, arrivalTime, burstTime, priority));
+                JCheckBox cb = new JCheckBox("Process " + inputModel.getValueAt(i, 0));
+                cb.setSelected(true);
+                checkBoxes.add(cb);
+                checkBoxPanel.add(cb);
             }
 
-            try {
-                switch (selectedMethod) {
-                    case "FCFS (First Come First Serve)":
-                        SchedulingAlgorithms.fcfs(processes, outputModel, avgTurnaroundField, avgWaitingField, throughputField);
-                        break;
-                    case "SJF (Shortest Job First)":
-                        SchedulingAlgorithms.sjf(processes, outputModel, avgTurnaroundField, avgWaitingField, throughputField);
-                        break;
-                    case "Priority Scheduling":
-                        SchedulingAlgorithms.priorityScheduling(processes, outputModel, avgTurnaroundField, avgWaitingField, throughputField);
-                        break;
-                    case "Round Robin":
-                        int timeQuantum = Integer.parseInt(txtTimeQuantum.getText());
-                        SchedulingAlgorithms.roundRobin(processes, outputModel, avgTurnaroundField, avgWaitingField, throughputField, timeQuantum);
-                        break;
-                    default:
-                        JOptionPane.showMessageDialog(frame, "Invalid scheduling method!", "Error", JOptionPane.ERROR_MESSAGE);
+            JButton btnConfirm = new JButton("Calculate Selected");
+            btnConfirm.addActionListener(event -> {
+                ArrayList<Process> selectedProcesses = new ArrayList<>();
+                for (int i = 0; i < checkBoxes.size(); i++) {
+                    if (checkBoxes.get(i).isSelected()) {
+                        int id = Integer.parseInt(inputModel.getValueAt(i, 0).toString().substring(1));
+                        int arrivalTime = Integer.parseInt(inputModel.getValueAt(i, 1).toString());
+                        int burstTime = Integer.parseInt(inputModel.getValueAt(i, 2).toString());
+                        int priority = Integer.parseInt(inputModel.getValueAt(i, 3).toString());
+                        selectedProcesses.add(new Process(id, arrivalTime, burstTime, priority));
+                    }
                 }
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(frame, "Invalid Time Quantum for Round Robin!", "Error", JOptionPane.ERROR_MESSAGE);
-            }
+
+                if (selectedProcesses.isEmpty()) {
+                    JOptionPane.showMessageDialog(selectDialog, "Please select at least one process!", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                // Keep previous calculations in the output table
+                try {
+                    switch (selectedMethod) {
+                        case "FCFS (First Come First Serve)":
+                            SchedulingAlgorithms.fcfs(selectedProcesses, outputModel, avgTurnaroundField, avgWaitingField, throughputField);
+                            for (int i = 0; i < outputModel.getRowCount(); i++) {
+                                outputModel.setValueAt("FCFS", i, 0);
+                            }
+                            break;
+                        case "SJF (Shortest Job First)":
+                            SchedulingAlgorithms.sjf(selectedProcesses, outputModel, avgTurnaroundField, avgWaitingField, throughputField);
+                            for (int i = 0; i < outputModel.getRowCount(); i++) {
+                                outputModel.setValueAt("SJF", i, 0);
+                            }
+                            break;
+                        case "Priority Scheduling":
+                            SchedulingAlgorithms.priorityScheduling(selectedProcesses, outputModel, avgTurnaroundField, avgWaitingField, throughputField);
+                            for (int i = 0; i < outputModel.getRowCount(); i++) {
+                                outputModel.setValueAt("Priority", i, 0);
+                            }
+                            break;
+                        case "Round Robin":
+                            int timeQuantum = Integer.parseInt(txtTimeQuantum.getText());
+                            SchedulingAlgorithms.roundRobin(selectedProcesses, outputModel, avgTurnaroundField, avgWaitingField, throughputField, timeQuantum);
+                            for (int i = 0; i < outputModel.getRowCount(); i++) {
+                                outputModel.setValueAt("RR (Q=" + timeQuantum + ")", i, 0);
+                            }
+                            break;
+                        default:
+                            JOptionPane.showMessageDialog(frame, "Invalid scheduling method!", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(frame, "Invalid Time Quantum for Round Robin!", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+                selectDialog.dispose();
+            });
+
+            selectDialog.add(new JScrollPane(checkBoxPanel), BorderLayout.CENTER);
+            selectDialog.add(btnConfirm, BorderLayout.SOUTH);
+            selectDialog.setLocationRelativeTo(frame);
+            selectDialog.setVisible(true);
         });
         btnExport.addActionListener(e -> {
             try {
-                File file = new File("output.csv");
+                // Add timestamp to filename
+                String timestamp = String.format("%tF_%tH-%tM-%tS", 
+                    System.currentTimeMillis(), 
+                    System.currentTimeMillis(), 
+                    System.currentTimeMillis(), 
+                    System.currentTimeMillis());
+                File file = new File("output_" + timestamp + ".csv");
                 FileWriter writer = new FileWriter(file);
 
                 for (int i = 0; i < outputModel.getColumnCount(); i++) {
@@ -307,9 +381,23 @@ public class CPUSchedulingSimulator {
                 }
 
                 writer.close();
-                JOptionPane.showMessageDialog(frame, "Results exported successfully to output.csv!", "Info", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(frame, "Results exported successfully to " + file.getName() + "!", "Info", JOptionPane.INFORMATION_MESSAGE);
             } catch (IOException ex) {
                 JOptionPane.showMessageDialog(frame, "Failed to export results!", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        // Add clear output button listener
+        btnClearOutput.addActionListener(e -> {
+            int confirm = JOptionPane.showConfirmDialog(frame, 
+                "Are you sure you want to clear all output?", 
+                "Confirm Clear", 
+                JOptionPane.YES_NO_OPTION);
+            if (confirm == JOptionPane.YES_OPTION) {
+                outputModel.setRowCount(0);
+                avgTurnaroundField.setText("");
+                avgWaitingField.setText("");
+                throughputField.setText("");
             }
         });
 

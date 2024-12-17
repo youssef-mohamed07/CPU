@@ -32,7 +32,7 @@ public class SchedulingAlgorithms {
             totalTAT += p.turnaroundTime;
             totalWT += p.waitingTime;
 
-            model.addRow(new Object[]{p.id, p.responseTime, p.turnaroundTime, p.completionTime, p.waitingTime});
+            model.addRow(new Object[]{"", p.id, p.responseTime, p.turnaroundTime, p.completionTime, p.waitingTime});
         }
 
         avgTurnaround.setText(String.format("%.2f", totalTAT / processes.size()));
@@ -82,7 +82,7 @@ public class SchedulingAlgorithms {
                 totalTAT += p.turnaroundTime;
                 totalWT += p.waitingTime;
 
-                model.addRow(new Object[]{p.id, p.responseTime, p.turnaroundTime, p.completionTime, p.waitingTime});
+                model.addRow(new Object[]{"", p.id, p.responseTime, p.turnaroundTime, p.completionTime, p.waitingTime});
             } else {
                 currentTime++;
             }
@@ -135,7 +135,7 @@ public class SchedulingAlgorithms {
                 totalTAT += p.turnaroundTime;
                 totalWT += p.waitingTime;
 
-                model.addRow(new Object[]{p.id, p.responseTime, p.turnaroundTime, p.completionTime, p.waitingTime});
+                model.addRow(new Object[]{"", p.id, p.responseTime, p.turnaroundTime, p.completionTime, p.waitingTime});
             } else {
                 currentTime++;
             }
@@ -196,7 +196,7 @@ public class SchedulingAlgorithms {
                     totalTAT += p.turnaroundTime;
                     totalWT += p.waitingTime;
 
-                    model.addRow(new Object[]{p.id, p.responseTime, p.turnaroundTime, p.completionTime, p.waitingTime});
+                    model.addRow(new Object[]{"", p.id, p.responseTime, p.turnaroundTime, p.completionTime, p.waitingTime});
                 } else {
                     // Add back to queue if not completed
                     readyQueue.add(p);
