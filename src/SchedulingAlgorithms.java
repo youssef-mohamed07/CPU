@@ -4,14 +4,13 @@ import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
 public class SchedulingAlgorithms {
-
-    // First-Come, First-Served (FCFS) Scheduling
-    public static void fcfs(ArrayList<Process> processes, DefaultTableModel model, JTextField avgTurnaround, JTextField avgWaiting, JTextField throughput) {
+    public static void fcfs(ArrayList<Process> processes, DefaultTableModel model, JTextField avgTurnaround, JTextField avgWaiting, JTextField throughput, JTextField cpuBurst, JTextField cpuUtilization) {
         resetProcessMetrics(processes);
         processes.sort(Comparator.comparingInt(p -> p.arrivalTime));
 
         int currentTime = 0;
         double totalTAT = 0, totalWT = 0;
+        int totalBurstTime = 0;
 
         model.setRowCount(0);
         for (Process p : processes) {
@@ -22,6 +21,7 @@ public class SchedulingAlgorithms {
             p.waitingTime = p.turnaroundTime - p.burstTime;
 
             currentTime = p.completionTime;
+            totalBurstTime += p.burstTime;
             totalTAT += p.turnaroundTime;
             totalWT += p.waitingTime;
 
@@ -29,13 +29,15 @@ public class SchedulingAlgorithms {
         }
 
         updateAverages(processes.size(), totalTAT, totalWT, avgTurnaround, avgWaiting, throughput, currentTime);
+        cpuBurst.setText(String.valueOf(totalBurstTime));
+        cpuUtilization.setText(String.format("%.2f%%", (totalBurstTime / (double) currentTime) * 100));
     }
 
-    // Shortest Job First (SJF) Scheduling
-    public static void sjf(ArrayList<Process> processes, DefaultTableModel model, JTextField avgTurnaround, JTextField avgWaiting, JTextField throughput) {
+    public static void sjf(ArrayList<Process> processes, DefaultTableModel model, JTextField avgTurnaround, JTextField avgWaiting, JTextField throughput, JTextField cpuBurst, JTextField cpuUtilization) {
         resetProcessMetrics(processes);
         int currentTime = 0;
         double totalTAT = 0, totalWT = 0;
+        int totalBurstTime = 0;
         int completed = 0;
         ArrayList<Process> readyQueue = new ArrayList<>();
 
@@ -53,6 +55,7 @@ public class SchedulingAlgorithms {
                 p.waitingTime = p.turnaroundTime - p.burstTime;
 
                 currentTime = p.completionTime;
+                totalBurstTime += p.burstTime;
                 completed++;
 
                 totalTAT += p.turnaroundTime;
@@ -65,13 +68,15 @@ public class SchedulingAlgorithms {
         }
 
         updateAverages(processes.size(), totalTAT, totalWT, avgTurnaround, avgWaiting, throughput, currentTime);
+        cpuBurst.setText(String.valueOf(totalBurstTime));
+        cpuUtilization.setText(String.format("%.2f%%", (totalBurstTime / (double) currentTime) * 100));
     }
 
-    // Priority Scheduling
-    public static void priorityScheduling(ArrayList<Process> processes, DefaultTableModel model, JTextField avgTurnaround, JTextField avgWaiting, JTextField throughput) {
+    public static void priorityScheduling(ArrayList<Process> processes, DefaultTableModel model, JTextField avgTurnaround, JTextField avgWaiting, JTextField throughput, JTextField cpuBurst, JTextField cpuUtilization) {
         resetProcessMetrics(processes);
         int currentTime = 0;
         double totalTAT = 0, totalWT = 0;
+        int totalBurstTime = 0;
         int completed = 0;
         ArrayList<Process> readyQueue = new ArrayList<>();
 
@@ -89,6 +94,7 @@ public class SchedulingAlgorithms {
                 p.waitingTime = p.turnaroundTime - p.burstTime;
 
                 currentTime = p.completionTime;
+                totalBurstTime += p.burstTime;
                 completed++;
 
                 totalTAT += p.turnaroundTime;
@@ -101,13 +107,15 @@ public class SchedulingAlgorithms {
         }
 
         updateAverages(processes.size(), totalTAT, totalWT, avgTurnaround, avgWaiting, throughput, currentTime);
+        cpuBurst.setText(String.valueOf(totalBurstTime));
+        cpuUtilization.setText(String.format("%.2f%%", (totalBurstTime / (double) currentTime) * 100));
     }
 
-    // Round Robin Scheduling
-    public static void roundRobin(ArrayList<Process> processes, DefaultTableModel model, JTextField avgTurnaround, JTextField avgWaiting, JTextField throughput, int timeQuantum) {
+    public static void roundRobin(ArrayList<Process> processes, DefaultTableModel model, JTextField avgTurnaround, JTextField avgWaiting, JTextField throughput, JTextField cpuBurst, JTextField cpuUtilization, int timeQuantum) {
         resetProcessMetrics(processes);
         int currentTime = 0;
         double totalTAT = 0, totalWT = 0;
+        int totalBurstTime = 0;
         int completed = 0;
         ArrayList<Process> readyQueue = new ArrayList<>();
         ArrayList<Process> remainingProcesses = new ArrayList<>(processes);
@@ -126,6 +134,8 @@ public class SchedulingAlgorithms {
                 int executeTime = Math.min(timeQuantum, p.burstTime);
                 p.burstTime -= executeTime;
                 currentTime += executeTime;
+
+                totalBurstTime += executeTime;
 
                 if (p.burstTime <= 0) {
                     p.completionTime = currentTime;
@@ -146,15 +156,16 @@ public class SchedulingAlgorithms {
         }
 
         updateAverages(processes.size(), totalTAT, totalWT, avgTurnaround, avgWaiting, throughput, currentTime);
+        cpuBurst.setText(String.valueOf(totalBurstTime));
+        cpuUtilization.setText(String.format("%.2f%%", (totalBurstTime / (double) currentTime) * 100));
     }
 
-    // Helper Methods
     private static void resetProcessMetrics(ArrayList<Process> processes) {
         for (Process p : processes) {
             p.completionTime = 0;
             p.turnaroundTime = 0;
             p.waitingTime = 0;
-            p.responseTime = -1; // Special marker for first response time
+            p.responseTime = -1;
         }
     }
 

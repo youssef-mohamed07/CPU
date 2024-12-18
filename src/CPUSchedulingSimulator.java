@@ -221,6 +221,26 @@ public class CPUSchedulingSimulator {
         throughputField.setEditable(false);
         outputPanel.add(throughputField);
 
+        JLabel lblCpuBurst = new JLabel("Total CPU Burst Time:");
+        lblCpuBurst.setFont(labelFont);
+        lblCpuBurst.setBounds(20, 400, 200, 30);
+        outputPanel.add(lblCpuBurst);
+
+        JTextField cpuBurstField = new JTextField();
+        cpuBurstField.setBounds(220, 400, 100, 30);
+        cpuBurstField.setEditable(false);
+        outputPanel.add(cpuBurstField);
+
+        JLabel lblCpuUtilization = new JLabel("CPU Utilization (%):");
+        lblCpuUtilization.setFont(labelFont);
+        lblCpuUtilization.setBounds(340, 400, 200, 30);
+        outputPanel.add(lblCpuUtilization);
+
+        JTextField cpuUtilizationField = new JTextField();
+        cpuUtilizationField.setBounds(520, 400, 100, 30);
+        cpuUtilizationField.setEditable(false);
+        outputPanel.add(cpuUtilizationField);
+
         JButton btnExport = new JButton("Export to CSV");
         btnExport.setBounds(1050, 340, 140, 30);
         outputPanel.add(btnExport);
@@ -328,26 +348,26 @@ public class CPUSchedulingSimulator {
                 try {
                     switch (selectedMethod) {
                         case "FCFS (First Come First Serve)":
-                            SchedulingAlgorithms.fcfs(selectedProcesses, outputModel, avgTurnaroundField, avgWaitingField, throughputField);
+                            SchedulingAlgorithms.fcfs(selectedProcesses, outputModel, avgTurnaroundField, avgWaitingField, throughputField, cpuBurstField, cpuUtilizationField);
                             for (int i = 0; i < outputModel.getRowCount(); i++) {
                                 outputModel.setValueAt("FCFS", i, 0);
                             }
                             break;
                         case "SJF (Shortest Job First)":
-                            SchedulingAlgorithms.sjf(selectedProcesses, outputModel, avgTurnaroundField, avgWaitingField, throughputField);
+                            SchedulingAlgorithms.sjf(selectedProcesses, outputModel, avgTurnaroundField, avgWaitingField, throughputField, cpuBurstField, cpuUtilizationField);
                             for (int i = 0; i < outputModel.getRowCount(); i++) {
                                 outputModel.setValueAt("SJF", i, 0);
                             }
                             break;
                         case "Priority Scheduling":
-                            SchedulingAlgorithms.priorityScheduling(selectedProcesses, outputModel, avgTurnaroundField, avgWaitingField, throughputField);
+                            SchedulingAlgorithms.priorityScheduling(selectedProcesses, outputModel, avgTurnaroundField, avgWaitingField, throughputField, cpuBurstField, cpuUtilizationField);
                             for (int i = 0; i < outputModel.getRowCount(); i++) {
                                 outputModel.setValueAt("Priority", i, 0);
                             }
                             break;
                         case "Round Robin":
                             int timeQuantum = Integer.parseInt(txtTimeQuantum.getText());
-                            SchedulingAlgorithms.roundRobin(selectedProcesses, outputModel, avgTurnaroundField, avgWaitingField, throughputField, timeQuantum);
+                            SchedulingAlgorithms.roundRobin(selectedProcesses, outputModel, avgTurnaroundField, avgWaitingField, throughputField, cpuBurstField, cpuUtilizationField, timeQuantum);
                             for (int i = 0; i < outputModel.getRowCount(); i++) {
                                 outputModel.setValueAt("RR (Q=" + timeQuantum + ")", i, 0);
                             }
