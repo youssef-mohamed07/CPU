@@ -153,6 +153,15 @@ public class CPUSchedulingSimulator {
         JTextField txtTimeQuantum = new JTextField();
         txtTimeQuantum.setBounds(20, 100, 440, 40);
         txtTimeQuantum.setBorder(BorderFactory.createTitledBorder("Time Quantum for Round Robin"));
+        txtTimeQuantum.setEnabled(false);
+
+        schedulingMethods.addActionListener(e -> {
+            String selectedMethod = (String) schedulingMethods.getSelectedItem();
+            txtTimeQuantum.setEnabled(selectedMethod != null && selectedMethod.equals("Round Robin"));
+            if (!txtTimeQuantum.isEnabled()) {
+                txtTimeQuantum.setText("");
+            }
+        });
 
         JButton btnCalculate = new JButton("Calculate");
         btnCalculate.setBounds(20, 160, 440, 40);
@@ -220,8 +229,8 @@ public class CPUSchedulingSimulator {
         btnClearOutput.setBounds(900, 340, 140, 30);
         outputPanel.add(btnClearOutput);
 
-        btnClearOutput.setBackground(new Color(220, 53, 69));  // Red color
-        btnClearOutput.setForeground(Color.WHITE);
+        btnClearOutput.setBackground(new Color(220, 53, 69)); 
+         // Red color
         btnClearOutput.setFocusPainted(false);
 
         // Add Panels to Frame
