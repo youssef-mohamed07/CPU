@@ -7,112 +7,17 @@ public class SchedulingAlgorithms {
 
     // First-Come, First-Served (FCFS) Scheduling Algorithm
     public static void fcfs(ArrayList<Process> processes, DefaultTableModel model, JTextField avgTurnaround, JTextField avgWaiting, JTextField throughput, JTextField cpuBurst, JTextField cpuUtilization) {
-        resetProcessMetrics(processes);
-        processes.sort(Comparator.comparingInt(p -> p.arrivalTime));
-
-        int currentTime = 0;
-        double totalTurnaroundTime = 0, totalWaitingTime = 0;
-        int totalBurstTime = 0; // Total CPU burst time
-
-        model.setRowCount(0); // Clear the model for new entries
-        for (Process process : processes) {
-            currentTime = Math.max(currentTime, process.arrivalTime);
-            process.responseTime = currentTime - process.arrivalTime;
-            process.completionTime = currentTime + process.burstTime;
-            process.turnaroundTime = process.completionTime - process.arrivalTime;
-            process.waitingTime = process.turnaroundTime - process.burstTime;
-
-            currentTime = process.completionTime;
-            totalBurstTime += process.burstTime; // Accumulate burst time
-            totalTurnaroundTime += process.turnaroundTime;
-            totalWaitingTime += process.waitingTime;
-
-            model.addRow(new Object[]{"FCFS", process.id, process.responseTime, process.turnaroundTime, process.completionTime, process.waitingTime});
-        }
-
-        updateAverages(processes.size(), totalTurnaroundTime, totalWaitingTime, avgTurnaround, avgWaiting, throughput, currentTime);
-        cpuBurst.setText(String.valueOf(totalBurstTime));
-        cpuUtilization.setText(String.format("%.2f%%", (totalBurstTime / (double) currentTime) * 100));
+        executeScheduling(processes, model, avgTurnaround, avgWaiting, throughput, cpuBurst, cpuUtilization, "FCFS");
     }
 
     // Shortest Job First (SJF) Scheduling Algorithm
     public static void sjf(ArrayList<Process> processes, DefaultTableModel model, JTextField avgTurnaround, JTextField avgWaiting, JTextField throughput, JTextField cpuBurst, JTextField cpuUtilization) {
-        resetProcessMetrics(processes);
-        int currentTime = 0;
-        double totalTurnaroundTime = 0, totalWaitingTime = 0;
-        int totalBurstTime = 0; // Total CPU burst time
-        int completedProcesses = 0;
-        ArrayList<Process> readyQueue = new ArrayList<>();
-
-        model.setRowCount(0); // Clear the model for new entries
-        while (completedProcesses < processes.size()) {
-            addArrivedProcesses(processes, currentTime, readyQueue);
-
-            if (!readyQueue.isEmpty()) {
-                readyQueue.sort(Comparator.comparingInt(p -> p.burstTime));
-                Process process = readyQueue.remove(0);
-                currentTime = Math.max(currentTime, process.arrivalTime);
-                process.responseTime = currentTime - process.arrivalTime;
-                process.completionTime = currentTime + process.burstTime;
-                process.turnaroundTime = process.completionTime - process.arrivalTime;
-                process.waitingTime = process.turnaroundTime - process.burstTime;
-
-                currentTime = process.completionTime;
-                totalBurstTime += process.burstTime; // Accumulate burst time
-                completedProcesses++;
-
-                totalTurnaroundTime += process.turnaroundTime;
-                totalWaitingTime += process.waitingTime;
-
-                model.addRow(new Object[]{"SJF", process.id, process.responseTime, process.turnaroundTime, process.completionTime, process.waitingTime});
-            } else {
-                currentTime++; // Increment time if no processes are ready
-            }
-        }
-
-        updateAverages(processes.size(), totalTurnaroundTime, totalWaitingTime, avgTurnaround, avgWaiting, throughput, currentTime);
-        cpuBurst.setText(String.valueOf(totalBurstTime));
-        cpuUtilization.setText(String.format("%.2f%%", (totalBurstTime / (double) currentTime) * 100));
+        executeScheduling(processes, model, avgTurnaround, avgWaiting, throughput, cpuBurst, cpuUtilization, "SJF");
     }
 
     // Priority Scheduling Algorithm
     public static void priorityScheduling(ArrayList<Process> processes, DefaultTableModel model, JTextField avgTurnaround, JTextField avgWaiting, JTextField throughput, JTextField cpuBurst, JTextField cpuUtilization) {
-        resetProcessMetrics(processes);
-        int currentTime = 0;
-        double totalTurnaroundTime = 0, totalWaitingTime = 0;
-        int totalBurstTime = 0; // Total CPU burst time
-        int completedProcesses = 0;
-        ArrayList<Process> readyQueue = new ArrayList<>();
-
-        model.setRowCount(0); // Clear the model for new entries
-        while (completedProcesses < processes.size()) {
-            addArrivedProcesses(processes, currentTime, readyQueue);
-
-            if (!readyQueue.isEmpty()) {
-                readyQueue.sort(Comparator.comparingInt(p -> p.priority));
-                Process process = readyQueue.remove(0);
-                currentTime = Math.max(currentTime, process.arrivalTime);
-                process.responseTime = currentTime - process.arrivalTime;
-                process.completionTime = currentTime + process.burstTime;
-                process.turnaroundTime = process.completionTime - process.arrivalTime;
-                process.waitingTime = process.turnaroundTime - process.burstTime;
-
-                currentTime = process.completionTime;
-                totalBurstTime += process.burstTime; // Accumulate burst time
-                completedProcesses++;
-
-                totalTurnaroundTime += process.turnaroundTime;
-                totalWaitingTime += process.waitingTime;
-
-                model.addRow(new Object[]{"Priority", process.id, process.responseTime, process.turnaroundTime, process.completionTime, process.waitingTime});
-            } else {
-                currentTime++; // Increment time if no processes are ready
-            }
-        }
-
-        updateAverages(processes.size(), totalTurnaroundTime, totalWaitingTime, avgTurnaround, avgWaiting, throughput, currentTime);
-        cpuBurst.setText(String.valueOf(totalBurstTime));
-        cpuUtilization.setText(String.format("%.2f%%", (totalBurstTime / (double) currentTime) * 100));
+        executeScheduling(processes, model, avgTurnaround, avgWaiting, throughput, cpuBurst, cpuUtilization, "Priority");
     }
 
     // Round Robin Scheduling Algorithm
@@ -158,6 +63,36 @@ public class SchedulingAlgorithms {
             } else {
                 currentTime++; // Increment time if no processes are ready
             }
+        }
+
+        updateAverages(processes.size(), totalTurnaroundTime, totalWaitingTime, avgTurnaround, avgWaiting, throughput, currentTime);
+        cpuBurst.setText(String.valueOf(totalBurstTime));
+        cpuUtilization.setText(String.format("%.2f%%", (totalBurstTime / (double) currentTime) * 100));
+    }
+
+    // Common scheduling execution logic
+    private static void executeScheduling(ArrayList<Process> processes, DefaultTableModel model, JTextField avgTurnaround, JTextField avgWaiting, JTextField throughput, JTextField cpuBurst, JTextField cpuUtilization, String algorithm) {
+        resetProcessMetrics(processes);
+        processes.sort(Comparator.comparingInt(p -> p.arrivalTime));
+
+        int currentTime = 0;
+        double totalTurnaroundTime = 0, totalWaitingTime = 0;
+        int totalBurstTime = 0; // Total CPU burst time
+
+        model.setRowCount(0); // Clear the model for new entries
+        for (Process process : processes) {
+            currentTime = Math.max(currentTime, process.arrivalTime);
+            process.responseTime = currentTime - process.arrivalTime;
+            process.completionTime = currentTime + process.burstTime;
+            process.turnaroundTime = process.completionTime - process.arrivalTime;
+            process.waitingTime = process.turnaroundTime - process.burstTime;
+
+            currentTime = process.completionTime;
+            totalBurstTime += process.burstTime; // Accumulate burst time
+            totalTurnaroundTime += process.turnaroundTime;
+            totalWaitingTime += process.waitingTime;
+
+            model.addRow(new Object[]{algorithm, process.id, process.responseTime, process.turnaroundTime, process.completionTime, process.waitingTime});
         }
 
         updateAverages(processes.size(), totalTurnaroundTime, totalWaitingTime, avgTurnaround, avgWaiting, throughput, currentTime);

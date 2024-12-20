@@ -262,16 +262,20 @@ public class CPUSchedulingSimulator {
         ArrayList<ArrayList<Process>> savedTests = new ArrayList<>();
         btnClearAll.addActionListener(e -> inputModel.setRowCount(0));
         btnSaveTest.addActionListener(e -> {
-            ArrayList<Process> test = new ArrayList<>();
-            for (int i = 0; i < inputModel.getRowCount(); i++) {
-                String id = inputModel.getValueAt(i, 0).toString();
-                int arrivalTime = Integer.parseInt(inputModel.getValueAt(i, 1).toString());
-                int burstTime = Integer.parseInt(inputModel.getValueAt(i, 2).toString());
-                int priority = Integer.parseInt(inputModel.getValueAt(i, 3).toString());
-                test.add(new Process(Integer.parseInt(id.substring(1)), arrivalTime, burstTime, priority));
+            try {
+                ArrayList<Process> test = new ArrayList<>();
+                for (int i = 0; i < inputModel.getRowCount(); i++) {
+                    String id = inputModel.getValueAt(i, 0).toString();
+                    int arrivalTime = Integer.parseInt(inputModel.getValueAt(i, 1).toString());
+                    int burstTime = Integer.parseInt(inputModel.getValueAt(i, 2).toString());
+                    int priority = Integer.parseInt(inputModel.getValueAt(i, 3).toString());
+                    test.add(new Process(Integer.parseInt(id.substring(1)), arrivalTime, burstTime, priority));
+                }
+                savedTests.add(test);
+                JOptionPane.showMessageDialog(frame, "Test saved successfully!", "Info", JOptionPane.INFORMATION_MESSAGE);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(frame, "Failed to save test: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
-            savedTests.add(test);
-            JOptionPane.showMessageDialog(frame, "Test saved successfully!", "Info", JOptionPane.INFORMATION_MESSAGE);
         });
         btnLoadTest.addActionListener(e -> {
             if (savedTests.isEmpty()) {
@@ -301,6 +305,7 @@ public class CPUSchedulingSimulator {
                 for (Process p : test) {
                     inputModel.addRow(new Object[]{"P" + p.id, p.arrivalTime, p.burstTime, p.priority});
                 }
+                JOptionPane.showMessageDialog(frame, "Test loaded successfully!", "Info", JOptionPane.INFORMATION_MESSAGE);
             }
         });
         btnCalculate.addActionListener(e -> {
@@ -349,28 +354,16 @@ public class CPUSchedulingSimulator {
                     switch (selectedMethod) {
                         case "FCFS (First Come First Serve)":
                             SchedulingAlgorithms.fcfs(selectedProcesses, outputModel, avgTurnaroundField, avgWaitingField, throughputField, cpuBurstField, cpuUtilizationField);
-                            for (int i = 0; i < outputModel.getRowCount(); i++) {
-                                outputModel.setValueAt("FCFS", i, 0);
-                            }
                             break;
                         case "SJF (Shortest Job First)":
                             SchedulingAlgorithms.sjf(selectedProcesses, outputModel, avgTurnaroundField, avgWaitingField, throughputField, cpuBurstField, cpuUtilizationField);
-                            for (int i = 0; i < outputModel.getRowCount(); i++) {
-                                outputModel.setValueAt("SJF", i, 0);
-                            }
                             break;
                         case "Priority Scheduling":
                             SchedulingAlgorithms.priorityScheduling(selectedProcesses, outputModel, avgTurnaroundField, avgWaitingField, throughputField, cpuBurstField, cpuUtilizationField);
-                            for (int i = 0; i < outputModel.getRowCount(); i++) {
-                                outputModel.setValueAt("Priority", i, 0);
-                            }
                             break;
                         case "Round Robin":
                             int timeQuantum = Integer.parseInt(txtTimeQuantum.getText());
                             SchedulingAlgorithms.roundRobin(selectedProcesses, outputModel, avgTurnaroundField, avgWaitingField, throughputField, cpuBurstField, cpuUtilizationField, timeQuantum);
-                            for (int i = 0; i < outputModel.getRowCount(); i++) {
-                                outputModel.setValueAt("RR (Q=" + timeQuantum + ")", i, 0);
-                            }
                             break;
                         default:
                             JOptionPane.showMessageDialog(frame, "Invalid scheduling method!", "Error", JOptionPane.ERROR_MESSAGE);
@@ -412,7 +405,7 @@ public class CPUSchedulingSimulator {
                 writer.close();
                 JOptionPane.showMessageDialog(frame, "Results exported successfully to " + file.getName() + "!", "Info", JOptionPane.INFORMATION_MESSAGE);
             } catch (IOException ex) {
-                JOptionPane.showMessageDialog(frame, "Failed to export results!", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(frame, "Failed to export results: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
 
@@ -427,6 +420,8 @@ public class CPUSchedulingSimulator {
                 avgTurnaroundField.setText("");
                 avgWaitingField.setText("");
                 throughputField.setText("");
+                cpuBurstField.setText("");
+                cpuUtilizationField.setText("");
             }
         });
 
