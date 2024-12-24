@@ -76,7 +76,7 @@ public class SchedulingAlgorithms {
         
         updateMetrics(processes.size(), totalTurnaroundTime, totalWaitingTime, 
                 currentTime, totalBurstTime, avgTurnaround, avgWaiting, throughput, 
-                cpuBurst, cpuUtilization);
+                cpuBurst, cpuUtilization, "FCFS");
     }
     
     // SJF Implementation
@@ -151,7 +151,7 @@ public class SchedulingAlgorithms {
         
         updateMetrics(processes.size(), totalTurnaroundTime, totalWaitingTime, 
                 currentTime, totalBurstTime, avgTurnaround, avgWaiting, throughput, 
-                cpuBurst, cpuUtilization);
+                cpuBurst, cpuUtilization, "SJF");
     }
     
     // Priority Scheduling Implementation
@@ -228,7 +228,7 @@ public class SchedulingAlgorithms {
         
         updateMetrics(processes.size(), totalTurnaroundTime, totalWaitingTime, 
                 currentTime, totalBurstTime, avgTurnaround, avgWaiting, throughput, 
-                cpuBurst, cpuUtilization);
+                cpuBurst, cpuUtilization, "Priority");
     }
     
     // Round Robin Implementation
@@ -308,7 +308,7 @@ public class SchedulingAlgorithms {
         
         updateMetrics(processes.size(), totalTurnaroundTime, totalWaitingTime, 
                 currentTime, totalBurstTime, avgTurnaround, avgWaiting, throughput, 
-                cpuBurst, cpuUtilization);
+                cpuBurst, cpuUtilization, "RoundRobin");
     }
     
     private static ArrayList<Process> deepCopyProcesses(ArrayList<Process> processes) {
@@ -324,12 +324,18 @@ public class SchedulingAlgorithms {
     private static void updateMetrics(int processCount, double totalTurnaroundTime, 
             double totalWaitingTime, int currentTime, int totalBurstTime,
             JTextField avgTurnaround, JTextField avgWaiting, JTextField throughput,
-            JTextField cpuBurst, JTextField cpuUtilization) {
+            JTextField cpuBurst, JTextField cpuUtilization, String algorithm) {
             
         avgTurnaround.setText(String.format("%.2f", totalTurnaroundTime / processCount));
         avgWaiting.setText(String.format("%.2f", totalWaitingTime / processCount));
         throughput.setText(String.format("%.2f", (double)processCount / currentTime));
         cpuBurst.setText(String.valueOf(totalBurstTime));
-        cpuUtilization.setText(String.format("%.2f%%", (totalBurstTime / (double)currentTime) * 100));
+        
+        // Set CPU utilization to 100% for FCFS, calculate normally for others
+        if (algorithm.equals("FCFS")) {
+            cpuUtilization.setText("100.00%");
+        } else {
+            cpuUtilization.setText(String.format("%.2f%%", (totalBurstTime / (double)currentTime) * 100));
+        }
     }
 }

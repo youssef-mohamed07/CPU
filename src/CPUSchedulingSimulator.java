@@ -10,7 +10,6 @@ import javax.swing.table.DefaultTableModel;
 public class CPUSchedulingSimulator {
 
     public static void main(String[] args) {
-        // Set global UI styles
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
@@ -87,19 +86,25 @@ public class CPUSchedulingSimulator {
         // Enhanced Input Validation
         btnAdd.addActionListener(e -> {
             try {
-                int arrivalTime = Integer.parseInt(txtArrivalTime.getText());
-                int burstTime = Integer.parseInt(txtBurstTime.getText());
-                int priority = Integer.parseInt(txtPriority.getText());
+                String arrivalTimeStr = txtArrivalTime.getText().trim();
+                int arrivalTime = arrivalTimeStr.isEmpty() ? 0 : Integer.parseInt(arrivalTimeStr);
+
+                if (txtBurstTime.getText().trim().isEmpty()) {
+                    throw new IllegalArgumentException("Burst Time is required.");
+                }
+                int burstTime = Integer.parseInt(txtBurstTime.getText().trim());
+
+                String priorityStr = txtPriority.getText().trim();
+                int priority = priorityStr.isEmpty() ? 0 : Integer.parseInt(priorityStr);
 
                 // Validate inputs
-                if (arrivalTime < 0 || burstTime <= 0 || priority < 0) {
+                if (arrivalTime < 0 || burstTime <= 0 || (!priorityStr.isEmpty() && priority < 0)) {
                     throw new IllegalArgumentException("Values must be non-negative and burst time must be positive.");
                 }
 
                 String processID = autoGenerateID.isSelected() ? "P" + (inputModel.getRowCount() + 1) : "P" + inputModel.getRowCount();
-                inputModel.addRow(new Object[]{processID, arrivalTime, burstTime, priority});
+                inputModel.addRow(new Object[]{processID, arrivalTimeStr.isEmpty() ? 0 : arrivalTime, burstTime, priorityStr.isEmpty() ? 1 : priority});
 
-                // Clear input fields
                 txtArrivalTime.setText("");
                 txtBurstTime.setText("");
                 txtPriority.setText("");
@@ -123,7 +128,6 @@ public class CPUSchedulingSimulator {
             }
         });
 
-        // Status bar for messages
         JLabel statusBar = new JLabel("Welcome to the CPU Scheduling Simulator");
         statusBar.setBounds(20, 850, 1220, 30);
         frame.add(statusBar);
@@ -170,7 +174,6 @@ public class CPUSchedulingSimulator {
         schedulingPanel.add(txtTimeQuantum);
         schedulingPanel.add(btnCalculate);
 
-        // Output Section
         JPanel outputPanel = new JPanel();
         outputPanel.setBounds(20, 280, 1220, 560);
         outputPanel.setLayout(null);
@@ -250,10 +253,8 @@ public class CPUSchedulingSimulator {
         outputPanel.add(btnClearOutput);
 
         btnClearOutput.setBackground(new Color(220, 53, 69)); 
-         // Red color
         btnClearOutput.setFocusPainted(false);
 
-        // Add Panels to Frame
         frame.add(inputPanel);
         frame.add(schedulingPanel);
         frame.add(outputPanel);
@@ -336,10 +337,21 @@ public class CPUSchedulingSimulator {
                 ArrayList<Process> selectedProcesses = new ArrayList<>();
                 for (int i = 0; i < checkBoxes.size(); i++) {
                     if (checkBoxes.get(i).isSelected()) {
+                        String priorityStr = inputModel.getValueAt(i, 3).toString().trim();
+                        
+                        // Check for empty priority values only for Priority Scheduling
+                        if (selectedMethod.equals("Priority Scheduling") && priorityStr.isEmpty()) {
+                            JOptionPane.showMessageDialog(selectDialog, 
+                                "Priority values are required for Priority Scheduling!\nPlease fill in all priority values.", 
+                                "Warning", 
+                                JOptionPane.WARNING_MESSAGE);
+                            return;
+                        }
+
                         int id = Integer.parseInt(inputModel.getValueAt(i, 0).toString().substring(1));
                         int arrivalTime = Integer.parseInt(inputModel.getValueAt(i, 1).toString());
                         int burstTime = Integer.parseInt(inputModel.getValueAt(i, 2).toString());
-                        int priority = Integer.parseInt(inputModel.getValueAt(i, 3).toString());
+                        int priority = priorityStr.isEmpty() ? 0 : Integer.parseInt(priorityStr);
                         selectedProcesses.add(new Process(id, arrivalTime, burstTime, priority));
                     }
                 }
