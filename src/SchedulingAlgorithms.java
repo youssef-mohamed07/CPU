@@ -4,12 +4,29 @@ import javax.swing.table.DefaultTableModel;
 
 public class SchedulingAlgorithms {
 
+    private static void resetAllProcesses(ArrayList<Process> processes) {
+        for (Process p : processes) {
+            p.reset();
+        }
+    }
+
+    private static void clearMetrics(JTextField avgTurnaround, JTextField avgWaiting, 
+            JTextField throughput, JTextField cpuBurst, JTextField cpuUtilization) {
+        avgTurnaround.setText("");
+        avgWaiting.setText("");
+        throughput.setText("");
+        cpuBurst.setText("");
+        cpuUtilization.setText("");
+    }
+
     // FCFS Implementation
     public static void fcfs(ArrayList<Process> processes, DefaultTableModel model, JTextField avgTurnaround, 
             JTextField avgWaiting, JTextField throughput, JTextField cpuBurst, JTextField cpuUtilization) {
         
-        // Clear the model at start
+        // Clear previous results
         model.setRowCount(0);
+        resetAllProcesses(processes);
+        clearMetrics(avgTurnaround, avgWaiting, throughput, cpuBurst, cpuUtilization);
         
         ArrayList<Process> remainingProcesses = deepCopyProcesses(processes);
         ArrayList<Process> readyQueue = new ArrayList<>();
@@ -66,8 +83,10 @@ public class SchedulingAlgorithms {
     public static void sjf(ArrayList<Process> processes, DefaultTableModel model, JTextField avgTurnaround, 
             JTextField avgWaiting, JTextField throughput, JTextField cpuBurst, JTextField cpuUtilization) {
         
-        // Clear the model at start
+        // Clear previous results
         model.setRowCount(0);
+        resetAllProcesses(processes);
+        clearMetrics(avgTurnaround, avgWaiting, throughput, cpuBurst, cpuUtilization);
         
         ArrayList<Process> remainingProcesses = deepCopyProcesses(processes);
         ArrayList<Process> readyQueue = new ArrayList<>();
@@ -140,8 +159,10 @@ public class SchedulingAlgorithms {
             JTextField avgTurnaround, JTextField avgWaiting, JTextField throughput, 
             JTextField cpuBurst, JTextField cpuUtilization) {
         
-        // Clear the model at start
+        // Clear previous results
         model.setRowCount(0);
+        resetAllProcesses(processes);
+        clearMetrics(avgTurnaround, avgWaiting, throughput, cpuBurst, cpuUtilization);
         
         ArrayList<Process> remainingProcesses = deepCopyProcesses(processes);
         ArrayList<Process> readyQueue = new ArrayList<>();
@@ -215,7 +236,10 @@ public class SchedulingAlgorithms {
             JTextField avgTurnaround, JTextField avgWaiting, JTextField throughput, 
             JTextField cpuBurst, JTextField cpuUtilization, int timeQuantum) {
         
+        // Clear previous results
         model.setRowCount(0);
+        resetAllProcesses(processes);
+        clearMetrics(avgTurnaround, avgWaiting, throughput, cpuBurst, cpuUtilization);
         
         ArrayList<Process> remainingProcesses = deepCopyProcesses(processes);
         Queue<Process> readyQueue = new LinkedList<>();
@@ -291,11 +315,7 @@ public class SchedulingAlgorithms {
         ArrayList<Process> copy = new ArrayList<>();
         for (Process p : processes) {
             Process newProcess = new Process(p.id, p.arrivalTime, p.burstTime, p.priority);
-            newProcess.responseTime = -1;
-            newProcess.waitingTime = 0;
-            newProcess.remainingTime = p.burstTime;
-            newProcess.completionTime = 0;
-            newProcess.turnaroundTime = 0;
+            newProcess.reset();
             copy.add(newProcess);
         }
         return copy;

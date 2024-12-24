@@ -36,4 +36,13 @@ public class Process {
             default: return Color.GRAY; // Default
         }
     }
+
+    public void reset() {
+        this.startTime = -1;
+        this.responseTime = -1;
+        this.completionTime = 0;
+        this.turnaroundTime = 0;
+        this.waitingTime = 0;
+        this.remainingTime = burstTime;
+    }
 }
