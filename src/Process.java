@@ -16,11 +16,16 @@ public class Process {
     public int waitingTime;
     public int responseTime;
 
+    public int startTime;
+    public int remainingTime;
+    
     public Process(int id, int arrivalTime, int burstTime, int priority) {
         this.id = id;
         this.arrivalTime = arrivalTime;
         this.burstTime = burstTime;
         this.priority = priority;
+        this.startTime = -1;
+        this.remainingTime = burstTime;
     }
 
     public Color getPriorityColor() {
